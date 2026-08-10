@@ -1,0 +1,205 @@
+--Top 5 selling Sub-Category
+
+SELECT "Sub-Category", SUM(Sales) AS Total_Sales
+FROM orders
+GROUP BY "Sub-Category"
+ORDER BY Total_Sales DESC
+LIMIT 5;
+
+
+--Who orders most often
+
+SELECT "Customer Name", COUNT ("Customer Name") AS Best_Customer
+FROM orders
+GROUP BY "Customer Name"
+ORDER BY "Best_Customer" DESC
+LIMIT 5;
+
+--Best 10 performing customers
+SELECT "Customer Name", SUM(Sales) AS Total_spent
+FROM orders
+GROUP BY "Customer Name"
+ORDER BY Total_spent DESC
+LIMIT 10;
+
+--Top 3 States
+
+SELECT State,SUM(Sales) AS Perfoming_state
+FROM orders 
+GROUP BY State
+ORDER BY Perfoming_state DESC
+LIMIT 3;
+
+
+-- How many orders came from each segement
+
+SELECT Segment, SUM(Sales) AS Total_orders
+FROM orders
+GROUP BY Segment
+ORDER BY Total_orders DESC;
+
+---SALES BY PERFORMANCE
+
+--What are total sales by Category and total orders (Furniture, Office Supplies, Technology)
+
+
+SELECT Category, SUM(Sales) AS Total_sales, COUNT(DISTINCT "Order ID") AS Total_orders
+FROM orders
+GROUP BY Category
+ORDER BY Total_sales DESC;
+
+--Which month of the year has the highest total sales, across all years combined?
+
+
+SELECT strftime('%m', "Order Date") AS Order_Month, SUM(Sales) AS Total_sales
+FROM orders
+GROUP BY Order_Month
+ORDER BY Total_sales DESC;
+
+--What's the total sales figure for the whole dataset?
+
+SELECT SUM(Sales) AS Total_Revenue
+FROM orders;
+
+--Whats the Highest Avr Sales per Category
+
+SELECT Category, AVG(Sales) AS Avg_sale
+FROM orders
+GROUP BY Category 
+ORDER BY Avg_sale DESC;
+
+
+--. What are the bottom 5 sub-categories by revenue — your weakest sellers?
+
+SELECT "Sub-Category", SUM(Sales) AS Total_Revenue
+From orders
+GROUP BY "Sub-Category"
+ORDER BY Total_Revenue ASC
+LIMIT 5;
+
+--How many distinct products are there in each Category
+
+SELECT Category, COUNT(DISTINCT "Product Name") AS Distinct_products
+FROM orders
+GROUP BY Category
+ORDER BY Distinct_products DESC;
+
+
+-- What's the average shipping time (Order Date to Ship Date) for each Ship Mode? 
+
+SELECT "Ship Mode", AVG(julianday("Ship Date") - julianday("Order Date")) AS Avg_shipping_days
+FROM orders
+GROUP BY "Ship Mode"
+ORDER BY Avg_shipping_days ASC;
+
+--Which Region has the most late-shipped orders (using the >3 day rule from earlier)?
+
+SELECT Region, COUNT(*) AS Late_orders
+FROM orders
+WHERE julianday("Ship Date") - julianday("Order Date") > 3
+GROUP BY Region
+ORDER BY Late_orders DESC;
+
+--What percentage of all orders were "Same Day" shipping? 
+
+-- Query A: how many Same Day orders
+SELECT COUNT(*) 
+FROM orders 
+WHERE "Ship Mode" = 'Same Day';
+
+-- Query B: how many orders total
+SELECT COUNT(*)
+FROM orders;
+
+SELECT ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM orders), 2) AS Same_day_percentage
+FROM orders
+WHERE "Ship Mode" = 'Same Day';
+
+-- Which Segment (Consumer, Corporate, Home Office) has the highest average order value?
+
+
+SELECT Segment, AVG(Sales) AS Avg_order_value
+FROM orders
+GROUP BY Segment
+ORDER BY Avg_order_value DESC;
+
+---How many orders does the average customer place? 
+
+SELECT ROUND(
+    CAST(COUNT(DISTINCT "Order ID") AS FLOAT) / COUNT(DISTINCT "Customer ID"), 
+    2
+) AS Avg_orders_per_customer
+FROM orders;
+
+-- Which State has the most distinct customers?
+
+SELECT State, COUNT(DISTINCT "Customer ID") AS Distinct_customers
+FROM orders
+GROUP BY State
+ORDER BY Distinct_customers DESC
+LIMIT 1;
+
+
+--What are total sales for the "Consumer" segment specifically, broken down by Region?
+
+SELECT Region, SUM (Sales) AS TOTAL_SALES
+FROM orders
+WHERE Segment = 'Consumer'
+GROUP BY Region
+ORDER BY TOTAL_SALES DESC;
+
+-- Which Category sells best in the West region specifically?
+
+SELECT Category, SUM(Sales) AS Best_selling
+From orders
+WHERE Region = 'West'
+GROUP BY Category
+ORDER BY Best_selling DESC;
+
+
+--List the Order ID, Product Name, and Customer Name (from the customers table) for the first 10 orders.
+
+SELECT orders."Order ID", orders."Product Name", customers."Customer Name"
+FROM orders
+JOIN customers ON orders."Customer ID" = customers."Customer ID"
+LIMIT 10;
+
+
+-- How many orders belong to customers in the "Corporate" segment,
+
+SELECT COUNT (*) AS Corporate_Segment
+FROM orders
+JOIN customers ON orders."Customer ID" = customers."Customer ID"
+WHERE customers.segment = 'Corporate';
+
+--total Sales for each Segment.
+
+SELECT orders.Segment, SUM(orders.Sales) AS Total_Sales
+FROM orders
+JOIN customers ON orders."Customer ID" = customers."Customer ID"
+GROUP BY customers.Segment
+ORDER BY Total_Sales DESC;
+
+
+--List orders placed by specific customers
+
+SELECT orders."Order ID", orders."Product Name", orders.Sales
+FROM orders
+JOIN customers ON orders."Customer ID" = customers."Customer ID"
+WHERE customers."Customer Name" = 'Claire Gute';
+
+
+--Create a products table,(Product ID, Product Name, Category, Sub-Category)
+
+
+CREATE TABLE products AS
+SELECT DISTINCT "Product ID", "Product Name", Category, "Sub-Category"
+FROM orders;
+
+--total sales for each Category, using the new products table
+
+SELECT products.Category, SUM(orders.Sales) AS Total_sales
+FROM orders
+JOIN products ON orders."Product ID" = products ."Product ID"
+GROUP BY products.Category
+ORDER BY Total_sales DESC;
