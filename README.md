@@ -1,4 +1,4 @@
-# Superstore Data Analysis: Cleaning, SQL & Power BI
+
 # Superstore Data Analysis: Cleaning, SQL & Power BI
 
 End-to-end analysis of retail sales data — cleaning a corrupted Kaggle dataset in Python, answering business questions in SQL, and visualizing the results in an interactive Power BI dashboard.
